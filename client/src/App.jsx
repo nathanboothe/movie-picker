@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { getJson, postJson } from './apiClient.js';
 
 function Chip({ label, active, onClick }) {
   return (
@@ -6,17 +7,6 @@ function Chip({ label, active, onClick }) {
       {label}
     </button>
   );
-}
-
-async function postJson(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
-  return data;
 }
 
 export default function App() {
@@ -70,10 +60,8 @@ export default function App() {
     setMoviePick(null);
     setMovieEmpty(false);
     setBusy(true);
-    fetch('/api/filters?type=movie')
-      .then((r) => r.json())
+    getJson('/api/filters?type=movie')
       .then((data) => {
-        if (data.error) throw new Error(data.error);
         setMovieFilters(data);
         setMovieYearFrom(data.minYear != null ? String(data.minYear) : '');
         setMovieYearTo(data.maxYear != null ? String(data.maxYear) : '');
@@ -133,10 +121,8 @@ export default function App() {
     resetNotices();
     setTvActive(null);
     setBusy(true);
-    fetch('/api/tv/in-progress')
-      .then((r) => r.json())
+    getJson('/api/tv/in-progress')
       .then((data) => {
-        if (data.error) throw new Error(data.error);
         setInProgress(data.series || []);
         setView('tvHome');
       })
@@ -148,10 +134,8 @@ export default function App() {
     resetNotices();
     setTvEmpty(false);
     setBusy(true);
-    fetch('/api/filters?type=tv')
-      .then((r) => r.json())
+    getJson('/api/filters?type=tv')
       .then((data) => {
-        if (data.error) throw new Error(data.error);
         setTvFilters(data);
         setTvYearFrom(data.minYear != null ? String(data.minYear) : '');
         setTvYearTo(data.maxYear != null ? String(data.maxYear) : '');

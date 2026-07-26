@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const { getCatalogDb } = require('./lib/catalogDb');
 const { getStateDb } = require('./lib/stateDb');
+const { checkAppPin } = require('./lib/appGate');
 const {
   queryMovieCandidates,
   queryTvSeriesCandidates,
@@ -12,6 +13,37 @@ const {
 
 const app = express();
 app.use(express.json());
+
+// Public endpoint the PIN screen calls to check a candidate PIN — must be
+// registered before the requireAppPin gate below, since it can't require
+// itself.
+app.post('/api/app-gate/verify-pin', (req, res) => {
+  const { pin } = req.body || {};
+  const result = checkAppPin(pin);
+  if (!result.ok) {
+    const status = result.reason === 'not_configured' ? 503 : 401;
+    return res.status(status).json({
+      ok: false,
+      error: result.reason === 'not_configured' ? 'App PIN is not configured on the server (set APP_PIN).' : 'Incorrect PIN.',
+    });
+  }
+  res.json({ ok: true });
+});
+
+function requireAppPin(req, res, next) {
+  const result = checkAppPin(req.header('X-App-Pin'));
+  if (!result.ok) {
+    const status = result.reason === 'not_configured' ? 503 : 401;
+    return res.status(status).json({
+      error: result.reason === 'not_configured' ? 'App PIN is not configured on the server (set APP_PIN).' : 'Incorrect PIN.',
+      lockedOut: true,
+    });
+  }
+  next();
+}
+
+// Everything else under /api/* requires the PIN.
+app.use('/api', requireAppPin);
 
 function parseFormats(stored) {
   return stored ? stored.split(';').map((s) => s.trim()).filter(Boolean) : [];
