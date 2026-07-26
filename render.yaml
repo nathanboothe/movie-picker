@@ -5,10 +5,10 @@ services:
     plan: starter
     buildCommand: npm run build
     startCommand: npm start
-    #disk:
-    #  name: movie-picker-data
-    #  mountPath: /var/data
-    #  sizeGB: 1
+    disk:
+      name: movie-picker-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: 20.17.0
