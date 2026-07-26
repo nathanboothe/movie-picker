@@ -1,0 +1,5 @@
+node_modules/
+client/dist/
+server/data/catalog.db
+server/data/state.db
+.DS_Store

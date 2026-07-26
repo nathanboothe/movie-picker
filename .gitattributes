@@ -1,0 +1,13 @@
+# Normalize line endings for everyone, regardless of OS. Git will store
+# files in the repo with LF, and convert to your OS's native line endings
+# in your working copy — this stops GitHub Desktop's "line endings changed
+# from LF to CRLF" warning from showing up on every file.
+* text=auto eol=lf
+
+# Binary files should never be touched by line-ending conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.db binary
