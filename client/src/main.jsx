@@ -37,3 +37,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Root />
   </React.StrictMode>
 );
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Non-fatal — the app works fine without it, this just enables the
+      // "Add to Home Screen" install prompt on Android/Chrome.
+    });
+  });
+}

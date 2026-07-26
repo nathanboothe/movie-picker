@@ -53,6 +53,21 @@ Choosing "TV Show" first checks for series already in progress and offers to
 - Multiple shows can be tracked in progress simultaneously; each has its own
   independent progress record.
 
+## Installing on your phone (no App Store needed)
+
+The app is a Progressive Web App (PWA) — your family can install it as a
+real home-screen app directly from the browser, no app store account or
+approval process required:
+
+- **iOS (Safari):** open the site, tap the **Share** button, then **Add to
+  Home Screen**.
+- **Android (Chrome):** open the site, tap the **⋮** menu, then **Add to
+  Home Screen** or **Install app** (Chrome sometimes prompts this
+  automatically).
+
+Either way, it gets its own icon and opens full-screen with no browser bar —
+indistinguishable from a "real" app for everyday use.
+
 ## Repo layout
 
 ```
