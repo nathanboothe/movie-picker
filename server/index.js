@@ -171,10 +171,10 @@ app.get('/api/tv/in-progress', (req, res) => {
 
 app.post('/api/pick', (req, res) => {
   try {
-    const { mediaType, genres = [], ratings = [], formats = [], yearFrom = null, yearTo = null, excludeKey = null } = req.body || {};
+    const { mediaType, genres = [], excludeGenres = [], ratings = [], formats = [], yearFrom = null, yearTo = null, excludeKey = null } = req.body || {};
     const catalogDb = getCatalogDb();
     const stateDb = getStateDb();
-    const filterArgs = { genres, ratings, formats, yearFrom, yearTo, excludeKey };
+    const filterArgs = { genres, excludeGenres, ratings, formats, yearFrom, yearTo, excludeKey };
 
     if (mediaType === 'movie') {
       let candidates = queryMovieCandidates(catalogDb, stateDb, filterArgs);

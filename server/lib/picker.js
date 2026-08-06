@@ -21,7 +21,7 @@ function excludedSeriesKeysForFreshPick(stateDb) {
   );
 }
 
-function queryMovieCandidates(catalogDb, stateDb, { genres = [], ratings = [], formats = [], yearFrom = null, yearTo = null, excludeKey = null }) {
+function queryMovieCandidates(catalogDb, stateDb, { genres = [], excludeGenres = [], ratings = [], formats = [], yearFrom = null, yearTo = null, excludeKey = null }) {
   const excluded = resolvedMovieKeys(stateDb);
   if (excludeKey) excluded.add(excludeKey);
 
@@ -34,6 +34,19 @@ function queryMovieCandidates(catalogDb, stateDb, { genres = [], ratings = [], f
     sql += ` JOIN title_genres tg ON tg.title_id = t.id JOIN genres g ON g.id = tg.genre_id`;
     where.push(`g.name IN (${genres.map(() => '?').join(',')})`);
     params.push(...genres);
+  }
+  if (excludeGenres.length > 0) {
+    // Separate aliases (tg_ex/g_ex) so this doesn't collide with the
+    // include-genre JOIN above — a title can match an included genre and
+    // still get excluded for also having an excluded one.
+    where.push(
+      `NOT EXISTS (
+         SELECT 1 FROM title_genres tg_ex
+         JOIN genres g_ex ON g_ex.id = tg_ex.genre_id
+         WHERE tg_ex.title_id = t.id AND g_ex.name IN (${excludeGenres.map(() => '?').join(',')})
+       )`
+    );
+    params.push(...excludeGenres);
   }
   if (formats.length > 0) {
     sql += ` JOIN title_formats tf ON tf.title_id = t.id JOIN formats f ON f.id = tf.format_id`;
@@ -61,7 +74,7 @@ function queryMovieCandidates(catalogDb, stateDb, { genres = [], ratings = [], f
 // Fresh TV pick: candidates are Season 1 rows of series not yet started/
 // resolved. Filters (genre/rating/format/year) are evaluated against Season
 // 1's own metadata, since that's what would actually start playing.
-function queryTvSeriesCandidates(catalogDb, stateDb, { genres = [], ratings = [], formats = [], yearFrom = null, yearTo = null, excludeKey = null }) {
+function queryTvSeriesCandidates(catalogDb, stateDb, { genres = [], excludeGenres = [], ratings = [], formats = [], yearFrom = null, yearTo = null, excludeKey = null }) {
   const excluded = excludedSeriesKeysForFreshPick(stateDb);
   if (excludeKey) excluded.add(excludeKey);
 
@@ -74,6 +87,18 @@ function queryTvSeriesCandidates(catalogDb, stateDb, { genres = [], ratings = []
     sql += ` JOIN title_genres tg ON tg.title_id = t.id JOIN genres g ON g.id = tg.genre_id`;
     where.push(`g.name IN (${genres.map(() => '?').join(',')})`);
     params.push(...genres);
+  }
+  if (excludeGenres.length > 0) {
+    // Season 1's genres, since that's the metadata a fresh TV pick is
+    // filtered against (see the comment above this function).
+    where.push(
+      `NOT EXISTS (
+         SELECT 1 FROM title_genres tg_ex
+         JOIN genres g_ex ON g_ex.id = tg_ex.genre_id
+         WHERE tg_ex.title_id = t.id AND g_ex.name IN (${excludeGenres.map(() => '?').join(',')})
+       )`
+    );
+    params.push(...excludeGenres);
   }
   if (formats.length > 0) {
     sql += ` JOIN title_formats tf ON tf.title_id = t.id JOIN formats f ON f.id = tf.format_id`;
